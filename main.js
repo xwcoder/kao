@@ -1,0 +1,43 @@
+//demo1
+//kao(function () {
+//    console.log(jQuery);
+//});
+
+//demo2
+//kao('static/plugin/g.js');
+
+
+//demo3
+//kao('static/plugin/g.js', function () {
+//    console.log(sohuHD);
+//});
+
+//demo4
+//kao('static/plugin/g.js', 
+//    'http://tv.sohu.com/upload/jq_plugin/passport.js', 
+//    {path:'jq_plugin/share.js', requires:[]}, function () {
+//        console.log(PassportSC.cookieHandle());
+//        console.log(jump);
+//    });
+
+//demo5
+//kao.add('g.js', {path:'static/plugin/g.js', requires:['jq_plugin/passport.js']});
+//kao('g.js', 'jq_plugin/share.js', function () {
+//    console.log(sohuHD);
+//    console.log(jump);
+//});
+
+//demo6
+kao.add('g.js', {path:'static/plugin/g.js', requires:['passport.js', 'jq_plugin/share.js']});
+kao.add('passport.js', {path:'jq_plugin/passport.js', requires : ['tv110421/js/play_login.js']})
+kao('g.js', 'static/global/hdpv.js', function(){
+    console.log(sohuHD);
+    console.log(PassportSC.cookieHandle());
+    console.log(jump);
+    console.log(_hdpv);
+});
+
+//demo7 css
+//kao('tv110421/main.css', 'static/plugin/g.js', function () {
+//    console.log(sohuHD);
+//});
