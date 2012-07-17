@@ -2,7 +2,269 @@
  * mb.js 
  * https://github.com/xwcoder/MessageBus
  */
-(function(a,b){function q(a){a=a||{},this.config=e(a,p),this.subTree={t:{},h:[]},this.pubItems={}}var c=1,d=Object.prototype.toString,e=function(a,b){if(a)for(var c in b)typeof a[c]=="undefined"&&(a[c]=b[c]);return a},f=function(a){return(a||"")+c++},g=function(a){throw new Error(a)},h=function(a){g("illegalTopic:"+a)},i=function(a){(!a||!a.length||d.call(a)!="[object String]"||/\*{2}\.\*{2}/.test(a)||/([^\.\*]\*)|(\*[^\.\*])/.test(a)||/(\*\*\.\*)|(\*\.\*\*)/.test(a)||/\*{3}/.test(a)||/\.{2}/.test(a)||a[0]=="."||a[a.length-1]==".")&&h(a)},j=function(a){var b=/[^a-zA-Z0-9-_\.\*]/.exec(a);b&&g("illegalCharactor:"+b[1])},k=function(a){(!a||!a.length||d.call(a)!="[object String]"||a.indexOf("*")!=-1||a[0]=="."||/\.{2}/.test(a)||a[a.length]==".")&&h(a)},l=function(a,b,c,e){b=b||null;var f,g,h=function(a,b,c,d){var e=!0;b[c]=d,a[c]=!0;for(var f in a)if(!a[f]){e=!1;break}return e},i=function(a,b){for(var c in a)a[c]=!1};for(var j=0,k=c.length;j<k;j++){f=c[j];if(typeof e=="undefined"||f.pubId!==e)f.pubId=e,g=f.config,g&&g._topics?h(g._topics,g.topics,a,b)&&(i(g._topics,g.topics),f.h.call(f.scope,a,g.topics,f.data)):(f.execedTime++,d.call(f.config.execTime)=="[object Number]"&&f.execedTime>=f.config.execTime&&(c.splice(j--,1),k=c.length),f.h.call(f.scope,a,b,f.data))}},m=function(a,b){for(var c=0,d=a.length;c<d;c++)if(a[c].sid==b){a.splice(c,1);break}},n=function(a,b){return a==b||b=="**"?!0:(b=b.replace(/\.\*\*\./g,"(((\\..+?\\.)*)|\\.)"),b=b.replace(/^\*\*\./,"(.+?\\.)*"),b=b.replace(/\.\*\*$/,"(\\..+?)*"),b=b.replace(/\.\*\./g,"(\\..+?\\.)"),b=b.replace(/^\*\./g,"(.+?\\.)"),b=b.replace(/\.\*$/g,"(\\..+?)"),(new RegExp(b)).test(a))},o=function(a,b){var c=[];for(var d in b)n(d,a)&&c.push({topic:d,value:b[d]});return c},p={cache:!0};e(q.prototype,{version:"1.0",subscribe:function(b,c,d,e,g){i(b),j(b),d=d||a,g=g||{};var h=f(),k={h:c,scope:d,data:e,sid:h,execedTime:0,config:g},m=b.split("."),n=0,p=m.length;(function(a,b,c,d){var e=a[b];b==a.length?d.h.push(c):(d.t[e]||(d.t[e]={t:{},h:[]}),arguments.callee.call(this,a,++b,c,d.t[e]))})(m,0,k,this.subTree);if(this.config.cache&&!!g.cache){var q=o(b,this.pubItems);for(n=0,p=q.length;n<p;n++)l(q[n].topic,q[n].value,[k])}return b+"^"+h},publish:function(a,b){k(a),j(a),this.pubItems[a]=b;var c=a.split("."),d;(function(a,b,c,d,e,f,g){var h=a[b];b==a.length?l(e,d,g&&g.isWildcard?c.t["**"].h:c.h,f):(c.t["**"]&&(c.t["**"].t[h]?arguments.callee.call(this,a,b+1,c.t["**"].t[h],d,e,f,{index:b,tree:c}):arguments.callee.call(this,a,b+1,c,d,e,f,{isWildcard:!0})),c.t[h]?arguments.callee.call(this,a,b+1,c.t[h],d,e,f):g&&!g.isWildcard&&arguments.callee.call(this,a,++g.index,g.tree,d,e,f,g),c.t["*"]&&arguments.callee.call(this,a,b+1,c.t["*"],d,e,f))})(c,0,this.subTree,b,a,f())},unsubscribe:function(a){var b=this,c=function(a){var a=a.split("^");a.length!=2&&g("illegal sid:"+a);var c=a[0].split("."),d=a[1];(function(a,b,c,d){var e=a[b];b==a.length?m(c.h,d):c.t[e]&&arguments.callee.call(this,a,++b,c.t[e],d)})(c,0,b.subTree,d)},a=a.split(";"),d=0,e=a.length;for(;d<e;d++)c(a[d])},wait:function(a,b,c,e,f){if(d.call(a)!=="[object Array]"||!a.length)return;f=f||{},f.topics={},f._topics={};var g=[],h=0,i=a.length,j;for(;h<i;h++)j=a[h],k(a[h]),f.topics[j]=null,f._topics[j]=!1;for(h=0;h<i;h++)g.push(this.subscribe(a[h],b,c,e,f));return g.join(";")}}),a.messagebus=new q,a.MessageBus=q})(window,undefined);
+(function(window, undefined){
+    var id = 1;
+    var toString = Object.prototype.toString;
+    
+    var applyIf = function(o, c) {
+        if (o) {
+            for (var p in c) {
+                typeof o[p] === 'undefined' && (o[p] = c[p]);
+            }
+        }
+        return o;
+    };
+
+    var generateId = function(prefix){
+        return (prefix || '') + id++;
+    };
+
+    var throwException = function(msg){
+        throw new Error(msg);
+    };
+
+    var illegalTopic = function(topic){
+        throwException('illegalTopic:' + topic);
+    };
+
+    var checkSubTopic = function(topic){
+        (!topic || !topic.length || toString.call(topic) != '[object String]' 
+            || /\*{2}\.\*{2}/.test(topic)
+            || /([^\.\*]\*)|(\*[^\.\*])/.test(topic)
+            || /(\*\*\.\*)|(\*\.\*\*)/.test(topic)
+            || /\*{3}/.test(topic) || /\.{2}/.test(topic)
+            || topic[0] == '.' || topic[topic.length-1] == '.') && illegalTopic(topic);
+    };
+
+    var checkIllegalCharactor = function(topic){
+        var m = /[^a-zA-Z0-9-_\.\*]/.exec(topic);
+        if(m){
+            throwException('illegalCharactor:' + m[1]);
+        }
+    };
+
+    var checkPubTopic = function(topic){
+        (!topic || !topic.length || toString.call(topic) != '[object String]' 
+            || topic.indexOf('*') != -1 || topic[0] == '.' 
+            || /\.{2}/.test(topic)
+            || topic[topic.length] == '.') && illegalTopic(topic);
+    };
+
+    var doCall = function(topic, msg, handlers, pubId) {
+        msg = msg || null;
+        var wrapFn, config;
+        var checkWait = function(_topics, topics, topic, msg) {
+            var r = true;
+            topics[topic] = msg;
+            _topics[topic] = true;
+            for (var t in _topics) {
+                if (!_topics[t]) {
+                    r = false;
+                    break;
+                }
+            }
+            return r;
+        };
+
+        var clearWait = function(_topics, topics) {
+            for (var t in _topics) {
+                _topics[t] = false;
+            }
+        };
+
+        for (var i = 0, len = handlers.length; i < len; i++) {
+            wrapFn = handlers[i];
+            if (wrapFn && (typeof pubId === 'undefined' || wrapFn.pubId !== pubId)) {
+                wrapFn.pubId = pubId;
+                config = wrapFn.config;
+                       
+                if (config && config._topics) {
+                    if (checkWait(config._topics, config.topics, topic, msg)) {
+                        clearWait(config._topics, config.topics);
+                        wrapFn.h.call(wrapFn.scope, topic, config.topics , wrapFn.data);
+                    }
+                } else {
+                    wrapFn.execedTime++;
+                    if (toString.call(wrapFn.config.execTime) == '[object Number]'
+                            && wrapFn.execedTime >= wrapFn.config.execTime) {
+                        handlers.splice(i--,1);
+                        len = handlers.length;
+                    }
+                    wrapFn.h.call(wrapFn.scope, topic, msg, wrapFn.data);
+                }
+            }
+        }
+    };
+
+    var deleteWrapFn = function(h, id){
+        for(var i = 0, len = h.length; i < len; i++){
+            if(h[i].sid == id){
+                h.splice(i,1);
+                break;
+            }
+        }
+    };
+
+    var match = function(p, t){
+        if(p == t || t == '**'){
+            return true;
+        }
+        t = t.replace(/\.\*\*\./g,'(((\\..+?\\.)*)|\\.)');
+        t = t.replace(/^\*\*\./,'(.+?\\.)*');
+        t = t.replace(/\.\*\*$/,'(\\..+?)*');
+
+        t = t.replace(/\.\*\./g,'(\\..+?\\.)');
+        t = t.replace(/^\*\./g,'(.+?\\.)');
+        t = t.replace(/\.\*$/g,'(\\..+?)');
+
+        return new RegExp(t).test(p);
+    };
+
+    var query = function(topic, pubItems) {
+        var msgs = [];
+        for(var p in pubItems){
+            if(match(p, topic)){
+                msgs.push({topic : p, value : pubItems[p]});
+            }
+        }
+        return msgs;
+    };
+
+    var defaults = {
+        cache : true
+    };
+
+    function MessageBus(c) {
+        c = c || {};
+        this.config = applyIf(c, defaults);
+        this.subTree = {t:{},h:[]};
+        this.pubItems = {};
+    }
+
+    applyIf(MessageBus.prototype, {
+        version : '1.0',
+
+        subscribe : function(topic, handler, scope, data, config) {
+            checkSubTopic(topic); 
+            checkIllegalCharactor(topic);
+            scope = scope || window;
+            config = config || {};
+
+            var sid = generateId();
+            var wrapFn = {h : handler, scope : scope, data : data, sid : sid, execedTime : 0, config : config};
+            var path = topic.split('.'), i = 0, len = path.length;
+            
+            (function(path, index, handler, tree){
+                var token = path[index];
+                if(index == path.length){
+                    tree.h.push(handler); 
+                }else{
+                    if(!tree.t[token]){
+                        tree.t[token] = {t:{}, h:[]};
+                    }
+                    arguments.callee.call(this, path, ++index, handler, tree.t[token]);
+                }
+            })(path, 0, wrapFn, this.subTree);
+
+            if(this.config.cache && !!config.cache){
+                var msgs = query(topic, this.pubItems);
+                for(i = 0, len = msgs.length; i < len; i++){
+                    doCall(msgs[i].topic, msgs[i].value, [wrapFn]);
+                }
+            }
+            return topic + '^' + sid;
+        },
+
+        publish : function(topic, msg) {
+            checkPubTopic(topic);
+            checkIllegalCharactor(topic);
+
+            this.pubItems[topic] = msg;
+
+            var path = topic.split('.');
+            var token;
+
+            (function(path, index, tree, msg, topic, pubId, seed){
+                var token = path[index];
+                if(index == path.length){
+                    doCall(topic, msg, (seed && seed.isWildcard) ? tree.t['**'].h : tree.h, pubId);
+                }else{
+                    if(tree.t['**']){
+                        if(tree.t['**'].t[token]){
+                            arguments.callee.call(this, path, index + 1, tree.t['**'].t[token], msg, topic, pubId, {index : index, tree:tree});
+                        }else{
+                            arguments.callee.call(this, path, index + 1, tree, msg, topic, pubId, {isWildcard : true});
+                        }
+                    }
+                    if(tree.t[token]){
+                        arguments.callee.call(this, path, index + 1, tree.t[token], msg, topic, pubId);
+                    }else if(seed && !seed.isWildcard){
+                        arguments.callee.call(this, path, ++seed.index, seed.tree, msg, topic, pubId, seed);
+                    }
+                    if(tree.t['*']){
+                        arguments.callee.call(this, path, index + 1, tree.t['*'], msg, topic, pubId);
+                    }
+                }
+            })(path, 0, this.subTree, msg, topic, generateId());
+        },
+
+        unsubscribe : function(sids) {
+            var me = this;
+
+            var unsubscribe = function(sid) {
+                var sid = sid.split('^');
+                if(sid.length != 2){
+                    throwException('illegal sid:' + sid);
+                }
+                var path = sid[0].split('.');
+                var id = sid[1];
+                (function(path, index, tree, id){
+                    var token = path[index];
+                    if(index == path.length){
+                        deleteWrapFn(tree.h, id);
+                    }else{
+                        if(tree.t[token]){
+                            arguments.callee.call(this, path, ++index, tree.t[token], id);
+                        }            
+                    }
+                })(path, 0, me.subTree, id);
+            };
+
+            var sids = sids.split(';');
+            var i = 0, len = sids.length;
+            for (; i < len; i++) {
+                unsubscribe(sids[i]);
+            }
+        },
+
+        wait : function(topics, handler, scope, data, config) {
+            if (toString.call(topics) !== '[object Array]' || !topics.length) {
+                return;
+            } 
+            
+            config = config || {};
+            config.topics = {};
+            config._topics = {};
+            var sids = [];
+
+            var i = 0, len = topics.length, topic;
+            for (; i < len; i++) {
+                topic = topics[i];
+                checkPubTopic(topics[i]);
+                config.topics[topic] = null;
+                config._topics[topic] = false;
+            }
+
+            for (i = 0; i < len; i++) {
+                sids.push(this.subscribe(topics[i], handler, scope, data, config)); 
+            }
+            return sids.join(';');
+        }
+    });
+    
+    window.messagebus = new MessageBus();
+    window.MessageBus = MessageBus;
+})(window, undefined);
 
 /*
  *2012-07-4
