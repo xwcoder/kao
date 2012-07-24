@@ -100,7 +100,7 @@
 
     var deleteWrapFn = function(h, id){
         for(var i = 0, len = h.length; i < len; i++){
-            if(h[i].sid == id){
+            if(h[i] && h[i].sid == id){
                 //h.splice(i,1);
                 h[i] = null;
                 break;
