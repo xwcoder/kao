@@ -39,3 +39,7 @@ kao.add(name, {path:'js/g.js', requires:[], charset : '', type : js});
 
 ### TODO ###
 稍后做个PPT, 整理一下js文件的无阻塞加载
+
+## License ##
+
+All directories and files are MIT Licensed.
