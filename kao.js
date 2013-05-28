@@ -286,6 +286,10 @@
         config.coreLib = ext;
     }
 
+    if ( ext = script.getAttribute( 'data-base' ) ) {
+        config.baseURL = ext;
+    }
+
     modules['kao-corelib'] = { path : config.coreLib }
 
     if (ext = script.getAttribute('data-main')) {
