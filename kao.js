@@ -286,7 +286,7 @@
         config.coreLib = ext;
     }
 
-    if ( ext = script.getAttribute( 'data-base' ) ) {
+    if ( ext = script.getAttribute( 'data-baseurl' ) ) {
         config.baseURL = ext;
     }
 
