@@ -224,6 +224,9 @@
     //kao(false, 'mod1', 'js/g.js', 'mod2', {path : 'js/gNav.js', requires : []});
     //kao('mod3', function(){});
     var kao = function () {
+        if ( !modules['kao-corelib'] ) {
+            modules['kao-corelib'] = { path : config.coreLib }
+        }
         var args = slice.call(arguments); 
         var fn;
         var requireCore = true;
@@ -289,8 +292,6 @@
     if ( ext = script.getAttribute( 'data-baseurl' ) ) {
         config.baseURL = ext;
     }
-
-    modules['kao-corelib'] = { path : config.coreLib }
 
     if (ext = script.getAttribute('data-main')) {
         if (script.getAttribute('data-main-needcore') === 'false') {
