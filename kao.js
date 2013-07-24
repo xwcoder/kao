@@ -127,7 +127,7 @@
         if ( !/^http(s)?:\/\//.exec( path ) ) {
             path = config.baseURL + path;
         }
-        if ( kao.debug && debugConfig.convert ) {
+        if ( kao.DEBUG && debugConfig.convert ) {
             if ( debugConfig.convert == 'all'
                 || isRegExp( debugConfig.convert ) && debugConfig.convert.test( path )
                 || isFunction( debugConfig.convert ) && debugConfig.convert( path ) ) {
@@ -203,7 +203,7 @@
                 loaded[ url ] = 1;
                 loading[ url ] = 0;
 
-                if ( !kao.debug ) {
+                if ( !kao.DEBUG ) {
                     script.parentNode.removeChild( node );
                 }
                 mb.publish(topic);
@@ -337,7 +337,7 @@
             apply( config, o );
         },
 
-        debug : false,
+        DEBUG : false,
 
         setDebugConfig : function ( o ) {
             apply( debugConfig, o );
@@ -356,7 +356,7 @@
     }
 
     if ( ( ext = script.getAttribute( 'data-debug' ) ) == 'true' ) {
-        kao.debug = true;
+        kao.DEBUG = true;
     }
 
     if ( ext = script.getAttribute( 'data-main' ) ) {
@@ -367,4 +367,206 @@
         }
     }
 } )( window, document );
-kao.debug = true;
+
+//kao-logger module
+;( function ( window, document, kao ) {
+
+    var pageBody = document.compatMode === 'CSS1Compat' ? document.documentElement : document.body;
+    var slice = Array.prototype.slice;
+    var panel, list, loggerInited;
+
+    var initLogger = function () {
+        var style = document.createElement( 'style' );
+        style.type = 'text/css';
+
+        var cssText = 
+            '#kao-logger-panel {'
+                + 'z-index:10000;'
+                + 'position:absolute;'
+                + 'top : 10px;'
+                + 'left : 10px;'
+                + 'width:500px;'
+                + 'border:3px solid #06a7e1;'
+            + '}'
+            + '#kao-logger-panel-top{'
+                + 'height:30px;'
+                + 'background:#06a7e1;'
+                + 'cursor:move;'
+                + 'color:#fff;'
+                + 'padding:0 10px;'
+            + '}'
+            + '#kao-logger-panel-body{'
+                + 'height:300px;'
+                + 'background:#fff;'
+                + 'padding:10px;'
+                + 'overflow:auto;'
+            + '}'
+            + '#kao-logger-list li{'
+                + 'list-style:none;'
+                + 'border-bottom:1px solid #f4f4f4;'
+            + '}'
+            + '#kao-logger-title{float:left;height:30px;line-height:30px;}'
+            + '#kao-logger-menu{float:right;}'
+            + '#kao-logger-menu .menu-item{'
+                + 'height:30px;'
+                + 'line-height:30px;'
+                + 'color:#fff;'
+                + 'float:left;'
+                + 'display:block;'
+                + 'margin-right:10px;'
+            + '}'
+            + '.kao-logger-info{color:#06a7e1}'
+            + '.kao-logger-log{color:#3a3a3a;}'
+            + '.kao-logger-error{color:#d80c18;}'
+            + '.kao-logger-group{border:2px solid #06a7e1}';
+
+        if ( style.styleSheet ) {
+            style.styleSheet.cssText = cssText;
+        } else {
+            style.appendChild( document.createTextNode( cssText ) );
+        }
+
+        var head = document.getElementsByTagName( 'head' )[ 0 ];
+        head.appendChild( style );
+
+
+        panel = document.createElement( 'div' );
+        panel.id = 'kao-logger-panel';
+        document.body.insertBefore( panel, document.body.firstChild );
+        panel.innerHTML = 
+              '<div id="kao-logger-panel-top">'
+                  + '<h1 id="kao-logger-title">kao-logger</h1>'
+                  + '<div id="kao-logger-menu">'
+                    + '<a id="kao-logger-btn-clear" class="menu-item" href="#" title="清空">清空</a>'
+                    + '<a id="kao-logger-btn-close" class="menu-item" href="#" title="关闭">关闭</a>'
+                  + '</div>'
+            + '</div>'
+            + '<div id="kao-logger-panel-body"><ul id="kao-logger-list"></ul></div>'
+            + '<div id="kao-logger-panel-foot"></div>';
+        
+        list = document.getElementById( 'kao-logger-list' );
+        var top = document.getElementById( 'kao-logger-panel-top' );
+        var drag = false;
+        top.onmousedown = function () {
+            drag = true;
+            event = event || window.event;
+
+            var pageX = event.pageX || event.x;
+            var pageY = event.pageY || event.y;
+
+            var L = panel.offsetLeft;
+            var T = panel.offsetTop;
+
+            document.onmousemove = function ( event ) {
+                event = event || window.event;
+                if ( drag ) {
+                    x = event.pageX || event.x;
+                    y = event.pageY || event.y;
+
+                    x = Math.max( x, 0 );
+                    y = Math.max( y, 0 );
+                    panel.style.left = ( L - pageX + x ) + 'px';
+                    panel.style.top  = ( T - pageY + y ) + 'px';
+                }
+            };
+            document.onmouseup = function () {
+                drag = false;
+            };
+        };
+        document.getElementById( 'kao-logger-btn-close' ).onclick = function () {
+            panel.style.display = 'none';
+        };
+        document.getElementById( 'kao-logger-btn-clear' ).onclick = function () {
+            list.innerHTML = '';    
+        };
+
+        loggerInited = true;
+    };
+
+    if ( false && window.console && window.console.log ) {
+        kao.logger = {
+            log : function () {
+                console.log.apply( console, slice.call( arguments ) );
+            },
+            info : function () {
+                console.info.apply( console, slice.call( arguments ) );
+            },
+            error : function () {
+                console.error.apply( console, slice.call( arguments ) );
+            },
+            group : function () {
+                console.group();
+            },
+            groupEnd : function () {
+                console.groupEnd();
+            }
+        };
+    } else {
+        kao.logger = {
+            log : function ( msg ) {
+                if ( !kao.DEBUG ) {
+                    return;
+                }
+                !loggerInited && initLogger();
+
+                panel.style.display = 'block';
+                list.innerHTML = list.innerHTML
+                    + '<li class="kao-logger-log">' + msg + '</li>';
+            },
+
+            info : function ( msg ) {
+
+                if ( !kao.DEBUG ) {
+                    return;
+                }
+                !loggerInited && initLogger();
+
+                panel.style.display = 'block';
+                list.innerHTML = list.innerHTML 
+                    + '<li class="kao-logger-info">' + msg + '</li>';
+            },
+
+            error : function ( msg ) {
+
+                if ( !kao.DEBUG ) {
+                    return;
+                }
+                !loggerInited && initLogger();
+
+                panel.style.display = 'block';
+                list.innerHTML = list.innerHTML 
+                    + '<li class="kao-logger-error">' +  msg + '</li>';
+            },
+            group : function () {
+
+                if ( !kao.DEBUG ) {
+                    return;
+                }
+                !loggerInited && initLogger();
+
+                panel.style.display = 'block';
+                list.innerHTML = list.innerHTML 
+                    + '<li class="kao-logger-group"></li>';
+            },
+            groupEnd : function () {
+
+                if ( !kao.DEBUG ) {
+                    return;
+                }
+                !loggerInited && initLogger();
+
+                list.innerHTML = list.innerHTML 
+                    + '<li class="kao-logger-group"></li>';
+            }
+        };
+    } 
+
+    kao.logger.setStyle = function ( styles ) {
+        if ( typeof styles == 'object' && panel ) {
+            for ( var p in styles ) {
+                panel.style[ p ] = styles[ p ];
+            }
+        }
+    };
+
+} )( window, document, kao );
