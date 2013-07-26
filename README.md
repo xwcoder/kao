@@ -43,7 +43,7 @@ kao.add(name, {path:'js/g.js', requires:[], charset : '', type : js});
 
 * 开启debug模式 方式一: kao.DEBUG = true;
 * 开启debug模式 方式二: &lt;script src="kao.js" data-debug="true"&gt;&lt;/script&gt;
-* debug模式会删除掉加载的script节点
+* 非debug模式会删除掉加载的script节点
 * debug模式提供若干配置项, { debugConfig }
     * convert: url转换为对src文件的请求, 默认值为'all',  转换函数为converFn
         - 'all' : 所有url转换为对src&lt;源文件&gt;的请求
