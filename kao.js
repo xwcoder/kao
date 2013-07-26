@@ -483,7 +483,7 @@
         loggerInited = true;
     };
 
-    if ( false && window.console && window.console.log ) {
+    if ( window.console && window.console.log ) {
         kao.logger = {
             log : function () {
                 console.log.apply( console, slice.call( arguments ) );
