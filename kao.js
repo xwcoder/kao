@@ -475,9 +475,11 @@
         };
         document.getElementById( 'kao-logger-btn-close' ).onclick = function () {
             panel.style.display = 'none';
+            return false;
         };
         document.getElementById( 'kao-logger-btn-clear' ).onclick = function () {
             list.innerHTML = '';    
+            return false;
         };
 
         loggerInited = true;
