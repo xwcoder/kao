@@ -374,13 +374,28 @@
     var pageBody = document.compatMode === 'CSS1Compat' ? document.documentElement : document.body;
     var slice = Array.prototype.slice;
     var panel, list, loggerInited;
+    var isTouch = 'ontouchstart' in window;
+
+	var START_EVENT = isTouch ? 'ontouchstart' : 'onmousedown';
+	var MOVE_EVENT = isTouch ? 'ontouchmove' : 'onmousemove';
+	var END_EVENT = isTouch ? 'ontouchend' : 'onmouseup';
 
     var initLogger = function () {
         var style = document.createElement( 'style' );
         style.type = 'text/css';
 
         var cssText = 
-            '#kao-logger-panel {'
+            '#kao-logger-panel div {'
+                + 'display:block;'
+                + '-webkit-box-sizing: content-box;'
+                + '-o-box-sizing: content-box;'
+                + 'box-sizing: content-box;'
+            + '}'
+            + '#kao-logger-panel {'
+                + 'display:block;'
+                + '-webkit-box-sizing: content-box;'
+                + '-o-box-sizing: content-box;'
+                + 'box-sizing: content-box;'
                 + 'z-index:10000;'
                 + 'position:absolute;'
                 + 'top : 10px;'
@@ -405,7 +420,7 @@
                 + 'list-style:none;'
                 + 'border-bottom:1px solid #f4f4f4;'
             + '}'
-            + '#kao-logger-title{float:left;height:30px;line-height:30px;}'
+            + '#kao-logger-title{margin:0;font-size:14px;float:left;height:30px;line-height:30px;}'
             + '#kao-logger-menu{float:right;}'
             + '#kao-logger-menu .menu-item{'
                 + 'height:30px;'
@@ -447,7 +462,8 @@
         list = document.getElementById( 'kao-logger-list' );
         var top = document.getElementById( 'kao-logger-panel-top' );
         var drag = false;
-        top.onmousedown = function () {
+        //top.onmousedown = function () {
+        top[ START_EVENT ] = function ( event ) {
             drag = true;
             event = event || window.event;
 
@@ -457,7 +473,8 @@
             var L = panel.offsetLeft;
             var T = panel.offsetTop;
 
-            document.onmousemove = function ( event ) {
+            //document.onmousemove = function ( event ) {
+            document[ MOVE_EVENT ] = function ( event ) {
                 event = event || window.event;
                 if ( drag ) {
                     x = event.pageX || event.x;
@@ -469,7 +486,8 @@
                     panel.style.top  = ( T - pageY + y ) + 'px';
                 }
             };
-            document.onmouseup = function () {
+            //document.onmouseup = function () {
+            document[ END_EVENT ] = function () {
                 drag = false;
             };
         };
@@ -485,7 +503,7 @@
         loggerInited = true;
     };
 
-    if ( false && window.console && window.console.log ) {
+    if ( !isTouch && window.console && window.console.log ) {
         kao.logger = {
             log : function () {
                 console.log.apply( console, slice.call( arguments ) );
