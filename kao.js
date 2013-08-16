@@ -69,7 +69,9 @@
     var config = {
         baseURL : 'http://js.tv.itc.cn/',
 
-        coreLib : 'http://js.tv.itc.cn/base/core/g13071501.js'
+        coreLib : 'http://js.tv.itc.cn/base/core/g13071501.js',
+
+        needCorelib : true
     };
 
     var debugConfig = {
@@ -284,12 +286,12 @@
 
         var args = slice.call( arguments ); 
         var fn;
-        var requireCore = true;
+        var requireCore = config.needCorelib;
 
-        if ( args[ 0 ] === false ) {
+        if ( args[ 0 ] === false || args[ 0 ] === true ) {
             requireCore = args.shift();
         }
-        
+
         if ( isFunction( args[ args.length - 1 ] ) ) {
             fn = args.pop();
         }
@@ -357,6 +359,10 @@
 
     if ( ( ext = script.getAttribute( 'data-debug' ) ) == 'true' ) {
         kao.DEBUG = true;
+    }
+    
+    if ( ( ext = script.getAttribute( 'data-needcorelib' ) ) == 'false' ) {
+        config.needCorelib = false;
     }
 
     if ( ext = script.getAttribute( 'data-main' ) ) {
