@@ -74,42 +74,6 @@
         needCorelib : true
     };
 
-    var debugConfig = {
-        convert : 'all',
-        convertFn : function ( url ) {
-
-            var exclude = this.convertExclude;
-
-            for ( var i = 0, len = exclude.length; i < len; i++ ) {
-                if ( isString( exclude[ i ] ) && url == exclude[ i ]
-                || isRegExp( exclude[ i ] ) && exclude[ i ].test( url)
-                || isFunction( exclude[ i ] ) && exclude[ i ]( url ) ) {
-                    return url;
-                }
-            }
-
-            if ( /\.src\./.test( url ) ) {
-                return url;
-            }
-            var reg = /\.(\d+)\.js(#|\?|\.|$)/; //core/g.13071501.js
-            var m;
-            if ( m = reg.exec( url ) ) {
-                return url.replace( m[ 1 ], 'src' );
-            }
-            
-            reg = /\w+?(\d+)\.js(#|\?|\.|$)/; //core/g13071501.js
-            
-            if ( m = reg.exec( url ) ) {
-                return url.replace( m[ 1 ], '.src' );               
-            }
-
-            return url;
-        },
-        convertExclude : [
-            'http://js.tv.itc.cn/base/core/j_1.7.2.js'
-        ]
-    };
-
     var loaded = {};
 
     var loading = {};
@@ -128,14 +92,6 @@
         path = path || '';
         if ( !/^http(s)?:\/\//.exec( path ) ) {
             path = config.baseURL + path;
-        }
-        if ( kao.DEBUG && debugConfig.convert ) {
-            if ( debugConfig.convert == 'all'
-                || isRegExp( debugConfig.convert ) && debugConfig.convert.test( path )
-                || isFunction( debugConfig.convert ) && debugConfig.convert( path ) ) {
-
-                path = debugConfig.convertFn( path );
-            }
         }
         return path;
     };
@@ -339,11 +295,7 @@
             apply( config, o );
         },
 
-        DEBUG : false,
-
-        setDebugConfig : function ( o ) {
-            apply( debugConfig, o );
-        }
+        DEBUG : false
 
     } );
 
