@@ -67,9 +67,9 @@
     };
 
     var config = {
-        baseURL : 'http://js.tv.itc.cn/',
+        baseURL : 'js.tv.itc.cn/',
 
-        coreLib : 'http://js.tv.itc.cn/base/core/g13071501.js',
+        coreLib : 'base/core/g13071501.js',
 
         needCorelib : true
     };
@@ -91,7 +91,7 @@
     var getUrl = function ( path ) {
         path = path || '';
         if ( !/^http(s)?:\/\//.exec( path ) ) {
-            path = config.baseURL + path;
+            path = document.location.protocol + '//' + config.baseURL + path;
         }
         return path;
     };
