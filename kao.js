@@ -67,7 +67,7 @@
     };
 
     var config = {
-        baseURL : 'js.tv.itc.cn/',
+        baseURL : '//js.tv.itc.cn/',
 
         coreLib : 'base/core/g13071501.js',
 
@@ -79,6 +79,22 @@
     var loading = {};
 
     var modules = {};
+
+    var REG_DOT_SLASH = /\/\.\//g;
+    var REG_MULTI_SLASH = /([^:])\/+\//g;
+    var REG_DOUBLE_SLASH = /\/[^\/]+\/\.\.\//;
+    var REG_HAS_EXPLICIT_PROTOCAL = /^[^:\/]+:\/\//;
+    var REG_HAS_PROTOCAL = /^(?:[a-zA-Z]+?:)?\/\/.+?/
+    var REG_DIR_NAME = /\/[^\/]*\.[^\/]*$/;
+    var REG_EXTNAME = /(\.[^\.]+)(?=[\?#]|$)/;
+
+    var REG_TRIM = /(^\s*)|(\s*$)/g;
+
+    var trim = ''.trim ? function (s) {
+            return s.trim();
+        } : function (s) {
+        return (s || '').replace(REG_TRIM, '');
+    };
     
     var getModule = function ( name ) {
         var mod;
@@ -89,11 +105,30 @@
     };
 
     var getUrl = function ( path ) {
-        path = path || '';
-        if ( !/^http(s)?:\/\//.exec( path ) ) {
-            path = document.location.protocol + '//' + config.baseURL + path;
+
+        var uri = path || '';
+
+        if (!REG_HAS_PROTOCAL.test(uri)) {
+            uri = config.baseURL + '/' + uri
         }
-        return path;
+
+        uri = trim(uri)
+
+        uri = uri.replace(REG_DOT_SLASH, '/').replace(REG_MULTI_SLASH, '$1/');
+
+        while (REG_DOUBLE_SLASH.test(uri)) {
+            uri = uri.replace(REG_DOUBLE_SLASH, '/');
+        }
+
+        if (!REG_HAS_EXPLICIT_PROTOCAL.test(uri)) { //for cache key
+            uri = document.location.protocol + uri
+        }
+
+        //path = path || '';
+        //if ( !/^http(s)?:\/\//.exec( path ) ) {
+        //    path = document.location.protocol + '//' + config.baseURL + path;
+        //}
+        return uri;
     };
 
     var loadCss = function ( url, charset ) {
